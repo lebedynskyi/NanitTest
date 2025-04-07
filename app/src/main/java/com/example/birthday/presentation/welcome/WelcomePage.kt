@@ -7,23 +7,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,17 +40,15 @@ import java.time.LocalDateTime
 fun WelcomePage(
     viewState: WelcomeViewState, onEvent: (UiEvent) -> Unit = {}
 ) {
-    Scaffold(
-        topBar = { WelcomePageTopBar() }) { padding ->
+    Column {
+        WelcomePageTopBar()
         WelcomePageContent(
             name = viewState.childName,
             date = viewState.birthdayDate,
             onNameChanged = { onEvent(WelcomeUIEvent.NameChanged(it)) },
             onDateChanged = { onEvent(WelcomeUIEvent.DateChanged(it)) },
             onShowPressed = { onEvent(WelcomeUIEvent.OnShowBirthday) },
-            modifier = Modifier
-                .padding(padding.calculateTopPadding())
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
@@ -109,28 +101,15 @@ private fun WelcomePageContent(
             onValueChange = {},
         )
 
-//        OutlinedButton(
-//            contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-//            shape = OutlinedTextFieldDefaults.shape,
-//            onClick = { showDatePicker = true },
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(OutlinedTextFieldDefaults.MinHeight),
-//        ) {
-//            Text(
-//                text = date?.toString() ?: stringResource(R.string.birthday),
-//                style = LocalTextStyle.current,
-//                color = OutlinedTextFieldDefaults.colors().focusedTextColor,
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//        }
-
         Spacer(Modifier.size(24.dp))
 
         OutlinedButton(
             onClick = onShowPressed
         ) {
-            Text(stringResource(R.string.show_birthday_screen))
+            Text(
+                stringResource(R.string.show_birthday_screen),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         }
     }
 }
