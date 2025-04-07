@@ -2,11 +2,14 @@ package com.example.birthday.presentation.base.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.welcome.WelcomePage
+import com.example.birthday.presentation.welcome.WelcomeViewModel
 
 @Composable
 fun NavigationHost(
@@ -22,6 +25,9 @@ fun NavigationHost(
 
 private fun NavGraphBuilder.buildNavigationGraph() {
     composable(AppRoute.Welcome.route) {
+        val viewModel = hiltViewModel<WelcomeViewModel>()
+        viewModel.onUiEvent(UiEvent.ScreenLoaded)
+
         WelcomePage()
     }
 }

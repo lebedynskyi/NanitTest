@@ -1,5 +1,9 @@
 plugins {
+    id(libs.plugins.kotlin.kapt.get().pluginId)
+
     alias(libs.plugins.android.application)
+    alias(libs.plugins.android.hilt)
+
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
@@ -37,6 +41,14 @@ android {
     buildFeatures {
         compose = true
     }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+kapt {
+    correctErrorTypes = true
 }
 
 dependencies {
@@ -50,6 +62,10 @@ dependencies {
     implementation(libs.androidx.ui.navigation)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation(libs.android.hilt)
+    implementation(libs.android.hilt.navigation)
+    kapt(libs.android.hilt.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
