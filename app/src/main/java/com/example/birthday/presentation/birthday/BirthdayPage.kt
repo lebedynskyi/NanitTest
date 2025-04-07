@@ -1,7 +1,7 @@
 package com.example.birthday.presentation.birthday
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.birthday.R
+import com.example.birthday.presentation.base.theme.AppTheme
 import com.example.birthday.presentation.base.theme.BirthdayTheme
+import com.example.birthday.presentation.base.theme.LocalTheme
 
 @Composable
 fun BirthdayPage(
@@ -45,16 +47,12 @@ fun BirthdayPage(
 private fun BirthdayPageContent(childName: String?) {
     var footerHeight by remember { mutableIntStateOf(0) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Cyan)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         ChildAge(
             Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 20.dp)
-                .fillMaxWidth(0.7F)
+                .fillMaxWidth(0.6F)
         )
 
         ChildAvatar(
@@ -65,7 +63,7 @@ private fun BirthdayPageContent(childName: String?) {
                 })
 
         Image(
-            painterResource(R.drawable.bg_fox_2),
+            painterResource(LocalTheme.current.theme.bgImage),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -119,9 +117,13 @@ private fun ChildAge(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ChildAvatar(modifier: Modifier = Modifier) {
+    val themeController = LocalTheme.current
+
     Image(
         painterResource(R.drawable.ic_avatar_fox),
-        modifier = modifier,
+        modifier = modifier.clickable {
+            themeController.switchTo((AppTheme.entries - themeController.theme).random())
+        },
         contentDescription = null,
     )
 }

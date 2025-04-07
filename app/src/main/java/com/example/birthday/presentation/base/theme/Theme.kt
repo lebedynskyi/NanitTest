@@ -1,35 +1,94 @@
 package com.example.birthday.presentation.base.theme
 
+import android.app.Activity
 import android.os.Build
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.LocalActivity
+import androidx.activity.enableEdgeToEdge
+import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.example.birthday.R
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+enum class AppTheme {
+    FOX {
+        override val bgImage = R.drawable.bg_fox
+    },
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    PELICAN {
+        override val bgImage = R.drawable.bg_pelican
+    },
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
+    ELEPHANT {
+        override val bgImage = R.drawable.bg_elephant
+    };
+
+    @get:DrawableRes
+    abstract val bgImage: Int
+}
+
+class ThemeController(
+    default: AppTheme
+) {
+    var theme by mutableStateOf(default)
+        private set
+
+    fun switchTo(theme: AppTheme) {
+        this.theme = theme
+    }
+}
+
+private val PelicanColorScheme = lightColorScheme(
+    primary = Color(0xFFDAF1F6),
+    onPrimary = Color(0xFF394562),
+    background = Color(0xFFDAF1F6),
+    onBackground = Color(0xFF394562),
+    secondary = Color(0xFFEF7B7B),
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    tertiary = Pink40
 )
+
+private val FoxColorScheme = lightColorScheme(
+    primary = Color(0xFF6FC5AF),
+    onPrimary = Color(0xFF394562),
+    background = Color(0xFFC5E8DF),
+    onBackground = Color(0xFF394562),
+    secondary = Color(0xFFEF7B7B),
+    onSecondary = Color.White,
+    tertiary = Pink40
+)
+
+private val ElephantColorScheme = lightColorScheme(
+    primary = Color(0xFFFEEFCB),
+    onPrimary = Color(0xFF394562),
+    background = Color(0xFFFEEFCB),
+    onBackground = Color(0xFF394562),
+    secondary = Color(0xFFEF7B7B),
+    onSecondary = Color.White,
+    tertiary = Pink40
+)
+
+val LocalTheme = staticCompositionLocalOf<ThemeController> {
+    error("No ThemeController provided")
+}
 
 @Composable
 fun BirthdayTheme(
@@ -37,19 +96,36 @@ fun BirthdayTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val themeController = remember { ThemeController(AppTheme.FOX) }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val bgColor = MaterialTheme.colorScheme.background.toArgb()
+    val colorScheme = when (themeController.theme) {
+        AppTheme.FOX -> FoxColorScheme
+        AppTheme.ELEPHANT -> ElephantColorScheme
+        AppTheme.PELICAN -> PelicanColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val activity = LocalActivity.current as ComponentActivity
+    LaunchedEffect(themeController.theme) {
+        if (Build.VERSION.SDK_INT >= 29) {
+            activity.enableEdgeToEdge(
+                navigationBarStyle = SystemBarStyle.light(bgColor, bgColor)
+            )
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(activity.window, false)
+            WindowCompat.getInsetsController(activity.window, activity.window.decorView).apply {
+                isAppearanceLightNavigationBars = true
+            }
+            activity.window.navigationBarColor = bgColor
+        }
+    }
+
+    CompositionLocalProvider(LocalTheme provides themeController) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+        ) {
+            content()
+        }
+    }
 }

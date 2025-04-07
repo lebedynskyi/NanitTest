@@ -14,6 +14,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -21,6 +22,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.birthday.R
@@ -49,7 +53,7 @@ fun WelcomePage(
             date = viewState.birthdayDate,
             onNameChanged = { onEvent(WelcomeUIEvent.NameChanged(it)) },
             onDateChanged = { onEvent(WelcomeUIEvent.DateChanged(it)) },
-            onShowPressed = {onEvent(WelcomeUIEvent.OnShowBirthday)},
+            onShowPressed = { onEvent(WelcomeUIEvent.OnShowBirthday) },
             modifier = Modifier
                 .padding(padding.calculateTopPadding())
                 .fillMaxSize()
@@ -59,13 +63,12 @@ fun WelcomePage(
 
 @Composable
 private fun WelcomePageTopBar() {
-    TopAppBar(
-        title = {
-            Text(
-                stringResource(R.string.app_name),
-                style = Typography.titleLarge,
-            )
-        })
+    Text(
+        stringResource(R.string.app_name),
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+        style = Typography.titleLarge
+    )
 }
 
 @Composable
@@ -100,21 +103,27 @@ private fun WelcomePageContent(
 
         Spacer(Modifier.size(12.dp))
 
-        OutlinedButton(
-            contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-            shape = OutlinedTextFieldDefaults.shape,
-            onClick = { showDatePicker = true },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(OutlinedTextFieldDefaults.MinHeight),
-        ) {
-            Text(
-                text = date?.let { it.toString() } ?: stringResource(R.string.birthday),
-                style = LocalTextStyle.current,
-                color = OutlinedTextFieldDefaults.colors().focusedTextColor,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        OutlinedTextField(
+            value = date?.toString().orEmpty(),
+            label = { Text(stringResource(R.string.birthday)) },
+            onValueChange = {},
+        )
+
+//        OutlinedButton(
+//            contentPadding = OutlinedTextFieldDefaults.contentPadding(),
+//            shape = OutlinedTextFieldDefaults.shape,
+//            onClick = { showDatePicker = true },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(OutlinedTextFieldDefaults.MinHeight),
+//        ) {
+//            Text(
+//                text = date?.toString() ?: stringResource(R.string.birthday),
+//                style = LocalTextStyle.current,
+//                color = OutlinedTextFieldDefaults.colors().focusedTextColor,
+//                modifier = Modifier.fillMaxWidth()
+//            )
+//        }
 
         Spacer(Modifier.size(24.dp))
 
