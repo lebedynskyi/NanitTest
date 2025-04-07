@@ -1,20 +1,16 @@
 package com.example.birthday.presentation.base.theme
 
-import android.app.Activity
 import android.os.Build
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,27 +18,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.example.birthday.R
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 enum class AppTheme {
     FOX {
         override val bgImage = R.drawable.bg_fox
+        override val avatarImage = R.drawable.ic_avatar_fox
     },
 
     PELICAN {
         override val bgImage = R.drawable.bg_pelican
+        override val avatarImage = R.drawable.ic_avatar_pelican
     },
 
     ELEPHANT {
         override val bgImage = R.drawable.bg_elephant
+        override val avatarImage = R.drawable.ic_avatar_elephant
     };
 
     @get:DrawableRes
     abstract val bgImage: Int
+
+    @get:DrawableRes
+    abstract val avatarImage: Int
 }
 
 class ThemeController(
@@ -97,27 +96,10 @@ fun BirthdayTheme(
     content: @Composable () -> Unit
 ) {
     val themeController = remember { ThemeController(AppTheme.FOX) }
-
-    val bgColor = MaterialTheme.colorScheme.background.toArgb()
     val colorScheme = when (themeController.theme) {
         AppTheme.FOX -> FoxColorScheme
         AppTheme.ELEPHANT -> ElephantColorScheme
         AppTheme.PELICAN -> PelicanColorScheme
-    }
-
-    val activity = LocalActivity.current as ComponentActivity
-    LaunchedEffect(themeController.theme) {
-        if (Build.VERSION.SDK_INT >= 29) {
-            activity.enableEdgeToEdge(
-                navigationBarStyle = SystemBarStyle.light(bgColor, bgColor)
-            )
-        } else {
-            WindowCompat.setDecorFitsSystemWindows(activity.window, false)
-            WindowCompat.getInsetsController(activity.window, activity.window.decorView).apply {
-                isAppearanceLightNavigationBars = true
-            }
-            activity.window.navigationBarColor = bgColor
-        }
     }
 
     CompositionLocalProvider(LocalTheme provides themeController) {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,6 +26,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -118,12 +120,14 @@ private fun ChildAge(modifier: Modifier = Modifier) {
 @Composable
 private fun ChildAvatar(modifier: Modifier = Modifier) {
     val themeController = LocalTheme.current
-
     Image(
-        painterResource(R.drawable.ic_avatar_fox),
-        modifier = modifier.clickable {
-            themeController.switchTo((AppTheme.entries - themeController.theme).random())
-        },
+        painterResource(themeController.theme.avatarImage),
+        modifier = modifier
+            .fillMaxWidth(0.65F)
+            .aspectRatio(1f)
+            .clickable {
+                themeController.switchTo((AppTheme.entries - themeController.theme).random())
+            },
         contentDescription = null,
     )
 }
@@ -136,7 +140,7 @@ private fun ChildFooter(modifier: Modifier = Modifier) {
     ) {
         Image(
             painterResource(R.drawable.ic_nanit),
-            modifier = Modifier.padding(top = 15.dp),
+            modifier = Modifier.padding(top = 20.dp),
             contentDescription = null
         )
 
