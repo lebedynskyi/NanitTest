@@ -1,6 +1,9 @@
 package com.example.birthday.presentation.base.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -26,8 +29,11 @@ fun NavigationHost(
 private fun NavGraphBuilder.buildNavigationGraph() {
     composable(AppRoute.Welcome.route) {
         val viewModel = hiltViewModel<WelcomeViewModel>()
-        viewModel.onUiEvent(UiEvent.ScreenLoaded)
+        LaunchedEffect(Unit) {
+            viewModel.onUiEvent(UiEvent.ScreenLoaded)
+        }
 
-        WelcomePage()
+        val viewState by viewModel.viewState.collectAsState()
+        WelcomePage(viewState, viewModel::onUiEvent)
     }
 }

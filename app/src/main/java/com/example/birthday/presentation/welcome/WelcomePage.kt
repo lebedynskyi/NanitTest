@@ -25,16 +25,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.birthday.R
+import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.theme.BirthdayTheme
 import com.example.birthday.presentation.base.theme.Typography
 
 @Composable
-fun WelcomePage() {
+fun WelcomePage(
+    viewState: WelcomeViewState,
+    onEvent: (UiEvent) -> Unit = {}
+) {
     Scaffold(
         topBar = { WelcomePageTopBar() }
     ) { padding ->
         WelcomePageContent(
-            Modifier
+            name = viewState.childName,
+            onNameChanged = { onEvent(WelcomeUIEvent.NameChanged(it)) },
+            modifier = Modifier
                 .padding(padding.calculateTopPadding())
                 .fillMaxSize()
         )
@@ -54,32 +60,34 @@ private fun WelcomePageTopBar() {
 }
 
 @Composable
-private fun WelcomePageContent(modifier: Modifier = Modifier) {
+private fun WelcomePageContent(
+    name: String?,
+    onNameChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        OutlinedTextField("asadsa", label = {
-            Text("Name")
-        }, onValueChange = {
-
-        })
+        OutlinedTextField(
+            value = name.orEmpty(),
+            label = { Text(stringResource(R.string.name)) },
+            onValueChange = onNameChanged
+        )
 
         Spacer(Modifier.size(12.dp))
 
         OutlinedButton(
             contentPadding = OutlinedTextFieldDefaults.contentPadding(),
             shape = OutlinedTextFieldDefaults.shape,
+            onClick = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(OutlinedTextFieldDefaults.MinHeight),
-            onClick = {
-
-            }
         ) {
             Text(
-                "Birthday",
+                text = stringResource(R.string.birthday),
                 style = LocalTextStyle.current,
                 color = OutlinedTextFieldDefaults.colors().focusedTextColor,
                 modifier = Modifier.fillMaxWidth()
@@ -88,10 +96,10 @@ private fun WelcomePageContent(modifier: Modifier = Modifier) {
 
         Spacer(Modifier.size(24.dp))
 
-        OutlinedButton(onClick = {
-
-        }) {
-            Text("Show birthday screen")
+        OutlinedButton(
+            onClick = {}
+        ) {
+            Text(stringResource(R.string.show_birthday_screen))
         }
     }
 }
@@ -100,6 +108,6 @@ private fun WelcomePageContent(modifier: Modifier = Modifier) {
 @Composable
 private fun WelcomePagePreview() {
     BirthdayTheme {
-        WelcomePage()
+        WelcomePage(WelcomeViewState(""))
     }
 }
