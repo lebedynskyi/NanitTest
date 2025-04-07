@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.ViewState
 import com.example.birthday.presentation.birthday.BirthdayPage
+import com.example.birthday.presentation.birthday.BirthdayViewState
 import com.example.birthday.presentation.welcome.WelcomePage
 import com.example.birthday.presentation.welcome.WelcomeViewModel
 
@@ -27,7 +28,7 @@ fun NavGraphBuilder.buildNavigationGraph(controller: NavHostController) {
     }
 
     composable(AppRoute.Birthday.route) {
-        BirthdayPage()
+        BirthdayPage(BirthdayViewState("asd"))
     }
 }
 
