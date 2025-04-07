@@ -1,3 +1,7 @@
 package com.example.birthday.presentation.base
 
-interface ViewState
+import com.example.birthday.presentation.base.navigation.AppRoute
+
+interface ViewState {
+    var appRoute: AppRoute?
+}

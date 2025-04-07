@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.update
 
 abstract class BaseViewModel<STATE : ViewState>() : ViewModel() {
     private val _viewState = MutableStateFlow(createViewState())
-
     val viewState: StateFlow<STATE> = _viewState.asStateFlow()
 
     abstract fun copyViewState(): STATE

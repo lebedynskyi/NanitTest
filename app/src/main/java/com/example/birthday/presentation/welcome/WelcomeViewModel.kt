@@ -2,6 +2,7 @@ package com.example.birthday.presentation.welcome
 
 import com.example.birthday.presentation.base.BaseViewModel
 import com.example.birthday.presentation.base.UiEvent
+import com.example.birthday.presentation.base.navigation.AppRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.LocalDateTime
@@ -19,6 +20,7 @@ class WelcomeViewModel @Inject constructor() : BaseViewModel<WelcomeViewState>()
         when (event) {
             is WelcomeUIEvent.NameChanged -> handleNameChanged(event.name)
             is WelcomeUIEvent.DateChanged -> handleDateChanged(event.date)
+            is WelcomeUIEvent.OnShowBirthday -> handleShowBirthday()
         }
     }
 
@@ -34,5 +36,12 @@ class WelcomeViewModel @Inject constructor() : BaseViewModel<WelcomeViewState>()
         updateView {
             birthdayDate = date
         }
+    }
+
+    private fun handleShowBirthday() {
+        updateView{
+            appRoute = AppRoute.Birthday
+        }
+
     }
 }

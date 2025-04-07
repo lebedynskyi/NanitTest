@@ -2,22 +2,18 @@
 
 package com.example.birthday.presentation.welcome
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -52,7 +48,8 @@ fun WelcomePage(
             name = viewState.childName,
             date = viewState.birthdayDate,
             onNameChanged = { onEvent(WelcomeUIEvent.NameChanged(it)) },
-            onDateChanged = {onEvent(WelcomeUIEvent.DateChanged(it))},
+            onDateChanged = { onEvent(WelcomeUIEvent.DateChanged(it)) },
+            onShowPressed = {onEvent(WelcomeUIEvent.OnShowBirthday)},
             modifier = Modifier
                 .padding(padding.calculateTopPadding())
                 .fillMaxSize()
@@ -77,6 +74,7 @@ private fun WelcomePageContent(
     date: LocalDateTime?,
     onNameChanged: (String) -> Unit,
     onDateChanged: (Long) -> Unit,
+    onShowPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -121,7 +119,8 @@ private fun WelcomePageContent(
         Spacer(Modifier.size(24.dp))
 
         OutlinedButton(
-            onClick = {}) {
+            onClick = onShowPressed
+        ) {
             Text(stringResource(R.string.show_birthday_screen))
         }
     }
