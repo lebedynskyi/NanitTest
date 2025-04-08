@@ -17,12 +17,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -64,7 +66,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Date
 import androidx.core.graphics.createBitmap
-
 
 private val IMAGE_NUMBERS = buildMap {
     put('0', R.drawable.ic_zero)
@@ -108,16 +109,15 @@ fun BirthdayConstraint(
     LaunchedEffect(captureImage) {
         if (captureImage) {
             captureView(activity!!.window.decorView.getRootView(), activity.window) {
+                captureImage = false
                 onEvent(BirthdayPageUiEvent.OnShareScreenShot(it))
             }
         }
-        captureImage = false
     }
 
     viewState.shareUri?.let {
         requestShareFile(LocalActivity.current!!, it.path.orEmpty())
         viewState.shareUri = null
-
     }
 }
 
@@ -165,11 +165,12 @@ private fun BirthdayConstraintContent(
 
         BackBtn(
             onClick = onBackClick,
-            modifier = Modifier.constrainAs(backBtn) {
-                top.linkTo(parent.top, margin = 18.dp)
-                start.linkTo(parent.start, margin = 16.dp)
-                visibility = if (uiIsVisible) Visibility.Visible else Visibility.Invisible
-            }
+            modifier = Modifier
+                .constrainAs(backBtn) {
+                    top.linkTo(parent.top, margin = 12.dp)
+                    start.linkTo(parent.start, margin = 12.dp)
+                    visibility = if (uiIsVisible) Visibility.Visible else Visibility.Invisible
+                }
         )
 
         CameraBtn(
@@ -199,13 +200,20 @@ private fun BackBtn(
     modifier: Modifier,
     onClick: () -> Unit,
 ) {
-    Image(
-        painter = painterResource(R.drawable.ic_back),
-        contentDescription = null,
-        modifier = modifier.clickable {
-            onClick()
-        }
-    )
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(48.dp)
+            .clickable {
+                onClick
+            }
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_back),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+        )
+    }
 }
 
 @Composable
