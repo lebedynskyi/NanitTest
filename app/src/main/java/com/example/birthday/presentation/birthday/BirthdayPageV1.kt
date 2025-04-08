@@ -201,7 +201,6 @@ private fun ChildAvatar(
     val bottomMargin = if (screenHeight > 700) 52.dp else 0.dp
     val scaleFactor = if (screenHeight > 700) 0.8F else 0.65F
     var boxRadius by remember { mutableIntStateOf(0) }
-    var cameraRadius by remember { mutableIntStateOf(0) }
     val cameraAngleRadians = Math.toRadians(315.0)
 
     Box(
@@ -215,7 +214,7 @@ private fun ChildAvatar(
             }
     ) {
         AsyncImage(
-            model = childAvatarUri ?: themeController.theme.avatarImage,
+            model = childAvatarUri ?: themeController.theme.avatarPlaceHolder,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -230,12 +229,7 @@ private fun ChildAvatar(
         Image(
             painter = painterResource(themeController.theme.cameraImage),
             contentDescription = null,
-            modifier = Modifier
-                .onGloballyPositioned {
-                    cameraRadius = it.size.height / 2
-                    System.err.println("POS CAM ${it.size}")
-                }
-                .offset {
+            modifier = Modifier.offset {
                     IntOffset(
                         (boxRadius * cos(cameraAngleRadians)).toInt(),
                         (boxRadius * sin(cameraAngleRadians)).toInt()

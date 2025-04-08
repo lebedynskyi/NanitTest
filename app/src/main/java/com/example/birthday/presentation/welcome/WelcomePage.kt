@@ -117,8 +117,8 @@ private fun WelcomePageContent(
     ) {
         AsyncImage(
             model = imageUri,
-            placeholder = painterResource(themeController.theme.avatarImage),
-            fallback = painterResource(themeController.theme.avatarImage),
+            placeholder = painterResource(themeController.theme.avatarPlaceHolder),
+            fallback = painterResource(themeController.theme.avatarPlaceHolder),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             onError = {

@@ -16,19 +16,19 @@ import com.example.birthday.R
 enum class AppTheme {
     FOX {
         override val bgImage = R.drawable.bg_fox
-        override val avatarImage = R.drawable.ic_avatar_fox
+        override val avatarPlaceHolder = R.drawable.ic_avatar_fox
         override val cameraImage = R.drawable.ic_camera_fox
     },
 
     PELICAN {
         override val bgImage = R.drawable.bg_pelican
-        override val avatarImage = R.drawable.ic_avatar_pelican
+        override val avatarPlaceHolder = R.drawable.ic_avatar_pelican
         override val cameraImage = R.drawable.ic_camera_pelican
     },
 
     ELEPHANT {
         override val bgImage = R.drawable.bg_elephant
-        override val avatarImage = R.drawable.ic_avatar_elephant
+        override val avatarPlaceHolder = R.drawable.ic_avatar_elephant
         override val cameraImage = R.drawable.ic_camera_elephant
     };
 
@@ -36,7 +36,7 @@ enum class AppTheme {
     abstract val bgImage: Int
 
     @get:DrawableRes
-    abstract val avatarImage: Int
+    abstract val avatarPlaceHolder: Int
 
     @get:DrawableRes
     abstract val cameraImage: Int

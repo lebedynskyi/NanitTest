@@ -10,7 +10,9 @@ data class BirthdayViewState(
     var childAge: Int? = null,
     var childAgeType: BirthdayType? = null,
     override var appRoute: AppRoute? = null,
-) : ViewState
+) : ViewState {
+    fun ageVisible() = childAge != null && childAgeType != null && !childName.isNullOrBlank()
+}
 
 enum class BirthdayType {
     MONTH, YEAR
