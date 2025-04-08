@@ -1,5 +1,6 @@
 package com.example.birthday.domain
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineDispatcher
@@ -22,6 +23,11 @@ class AppPrefs @Inject constructor(
         val file = fileStore.saveImage(uri)
         val path = file?.absolutePath
         prefsStore.put(AVATAR_IMAGE_KEY, path)
+        file?.toUri()
+    }
+
+    suspend fun saveScreenShotImage(bitmap: Bitmap): Uri? = withContext(coroutineDispatcher) {
+        val file = fileStore.saveImage(bitmap)
         file?.toUri()
     }
 

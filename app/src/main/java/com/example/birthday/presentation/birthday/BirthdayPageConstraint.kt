@@ -1,6 +1,17 @@
 package com.example.birthday.presentation.birthday
 
+import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.Rect
 import android.net.Uri
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.text.format.DateFormat
+import android.view.PixelCopy
+import android.view.View
+import android.view.Window
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -20,6 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,12 +52,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Visibility
+import androidx.core.app.ShareCompat
+import androidx.core.content.FileProvider
 import coil3.compose.AsyncImage
 import com.example.birthday.R
 import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.theme.AppTheme
 import com.example.birthday.presentation.base.theme.BirthdayTheme
 import com.example.birthday.presentation.base.theme.LocalTheme
+import java.io.File
+import java.io.FileOutputStream
+import java.util.Date
+import androidx.core.graphics.createBitmap
 
 
 private val IMAGE_NUMBERS = buildMap {
@@ -69,30 +90,49 @@ fun BirthdayConstraint(
     }
 
     val themeController = LocalTheme.current
+    val activity = LocalActivity.current
+    var captureImage by remember { mutableStateOf(false) }
+
+    BirthdayConstraintContent(
+        viewState = viewState,
+        onBackClick = onBackNavigation,
+        uiIsVisible = !captureImage,
+        onAvatarCameraClick = { launcher.launch("image/*") },
+        onShareClick = { captureImage = true }
+    )
 
     LaunchedEffect(Unit) {
         themeController.switchTo((AppTheme.entries - themeController.theme).random())
     }
 
-    BirthdayConstraintContent(
-        viewState = viewState,
-        onBackClick = onBackNavigation,
-        onAvatarCameraClick = { launcher.launch("image/*") }
-    )
+    LaunchedEffect(captureImage) {
+        if (captureImage) {
+            captureView(activity!!.window.decorView.getRootView(), activity.window) {
+                onEvent(BirthdayPageUiEvent.OnShareScreenShot(it))
+            }
+        }
+        captureImage = false
+    }
+
+    viewState.shareUri?.let {
+        requestShareFile(LocalActivity.current!!, it.path.orEmpty())
+        viewState.shareUri = null
+
+    }
 }
 
 @Composable
 private fun BirthdayConstraintContent(
     viewState: BirthdayViewState,
     uiIsVisible: Boolean = true,
-    onBackClick: () -> Unit,
-    onAvatarCameraClick: () -> Unit,
+    onBackClick: () -> Unit = {},
+    onAvatarCameraClick: () -> Unit = {},
+    onShareClick: () -> Unit = {}
 ) {
     ConstraintLayout(
         modifier = Modifier.fillMaxSize()
     ) {
         val (avatarBox, ageBox, backBtn, cameraBtn, uiFooterBox) = createRefs()
-
         val configuration = LocalConfiguration.current
         val screenHeight = configuration.screenHeightDp
         val avatarSize = 280.dp
@@ -126,7 +166,7 @@ private fun BirthdayConstraintContent(
         BackBtn(
             onClick = onBackClick,
             modifier = Modifier.constrainAs(backBtn) {
-                top.linkTo(parent.top, margin = 16.dp)
+                top.linkTo(parent.top, margin = 18.dp)
                 start.linkTo(parent.start, margin = 16.dp)
                 visibility = if (uiIsVisible) Visibility.Visible else Visibility.Invisible
             }
@@ -142,6 +182,7 @@ private fun BirthdayConstraintContent(
         )
 
         UIFooterBox(
+            onClick = onShareClick,
             modifier = Modifier
                 .constrainAs(uiFooterBox) {
                     bottom.linkTo(parent.bottom)
@@ -206,12 +247,16 @@ private fun AvatarBox(
         contentScale = ContentScale.Crop,
         modifier = modifier
             .clip(shape = CircleShape)
+            .clickable {
+                themeController.switchTo((AppTheme.entries - themeController.theme).random())
+            }
     )
 }
 
 @Composable
 private fun UIFooterBox(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -227,7 +272,7 @@ private fun UIFooterBox(
             modifier = Modifier
                 .padding(vertical = 53.dp)
                 .height(42.dp),
-            onClick = {},
+            onClick = { onClick() },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
             Text(
@@ -295,9 +340,62 @@ private fun AgeBox(
     }
 }
 
+private fun takeScreenshot(window: Window): File {
+    val now: Date = Date()
+    DateFormat.format("yyyy-MM-dd_hh:mm:ss", now)
+    // image naming and path  to include sd card  appending name you choose for file
+    val mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg"
+
+    // create bitmap screen capture
+    val v1: View = window.decorView.getRootView()
+    v1.setDrawingCacheEnabled(true)
+    val bitmap = Bitmap.createBitmap(v1.drawingCache)
+    v1.setDrawingCacheEnabled(false)
+
+    val imageFile = File(mPath)
+
+    val outputStream = FileOutputStream(imageFile)
+    val quality = 100
+    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+    outputStream.flush()
+    outputStream.close()
+
+    return imageFile
+}
+
+fun captureView(view: View, window: Window, bitmapCallback: (Bitmap) -> Unit) {
+    val bitmap = createBitmap(view.width, view.height)
+    val location = IntArray(2)
+    view.getLocationInWindow(location)
+    PixelCopy.request(
+        window,
+        Rect(location[0], location[1], location[0] + view.width, location[1] + view.height),
+        bitmap,
+        {
+            if (it == PixelCopy.SUCCESS) {
+                bitmapCallback.invoke(bitmap)
+            }
+        },
+        Handler(Looper.getMainLooper())
+    )
+}
+
+fun requestShareFile(
+    activity: Activity,
+    filePath: String,
+) {
+    val uri =
+        FileProvider.getUriForFile(activity, activity.packageName + ".provider", File(filePath))
+    ShareCompat.IntentBuilder(activity)
+        .setChooserTitle("Choose application to share a ")
+        .setType("*/*")
+        .addStream(uri)
+        .startChooser()
+}
+
 @Preview
 @Composable
-private fun PreviewBirthdayV2() {
+private fun PreviewBirthdayConstraint() {
     BirthdayTheme {
         BirthdayConstraint(
             BirthdayViewState(

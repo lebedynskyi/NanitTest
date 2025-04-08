@@ -1,5 +1,6 @@
 package com.example.birthday.presentation.birthday
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.example.birthday.domain.AppPrefs
@@ -26,6 +27,7 @@ class BirthdayViewModel @Inject constructor(
         when (event) {
             is UiEvent.ScreenLoaded -> handleScreenLoaded()
             is BirthdayPageUiEvent.OnAvatarChanged -> handleAvatarChanged(event.uri)
+            is BirthdayPageUiEvent.OnShareScreenShot -> handleShareScreenSHot(event.bitmap)
         }
     }
 
@@ -50,6 +52,15 @@ class BirthdayViewModel @Inject constructor(
             val savedUri = appPrefs.saveAvatarImage(uri)
             updateView {
                 childAvatarUri = savedUri
+            }
+        }
+    }
+
+    private fun handleShareScreenSHot(bitmap: Bitmap) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = appPrefs.saveScreenShotImage(bitmap)
+            updateView {
+                shareUri = result
             }
         }
     }

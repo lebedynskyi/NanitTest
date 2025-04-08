@@ -9,6 +9,7 @@ data class BirthdayViewState(
     var childAvatarUri: Uri? = null,
     var childAge: Int? = null,
     var childAgeType: BirthdayType? = null,
+    var shareUri: Uri? = null,
     override var appRoute: AppRoute? = null,
 ) : ViewState {
     fun ageVisible() = childAge != null && childAgeType != null && !childName.isNullOrBlank()
