@@ -54,7 +54,7 @@ import java.time.ZoneOffset
 fun WelcomePage(
     viewState: WelcomeViewState, onEvent: (UiEvent) -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+    val mediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         it?.let { onEvent(WelcomeUIEvent.OnAvatarSelected(it)) }
     }
 
@@ -68,7 +68,7 @@ fun WelcomePage(
             onNameChanged = { onEvent(WelcomeUIEvent.NameChanged(it)) },
             onDateChanged = { onEvent(WelcomeUIEvent.DateChanged(it)) },
             onShowPressed = { onEvent(WelcomeUIEvent.OnShowBirthday) },
-            onAvatarClicked = { launcher.launch("image/*") },
+            onAvatarClicked = { mediaLauncher.launch("image/*") },
             modifier = Modifier.fillMaxSize()
         )
     }

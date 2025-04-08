@@ -1,5 +1,6 @@
 package com.example.birthday.presentation.birthday
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.example.birthday.domain.AppPrefs
 import com.example.birthday.presentation.base.BaseViewModel
@@ -24,6 +25,7 @@ class BirthdayViewModel @Inject constructor(
 
         when (event) {
             is UiEvent.ScreenLoaded -> handleScreenLoaded()
+            is BirthdayPageUiEvent.OnAvatarChanged -> handleAvatarChanged(event.uri)
         }
     }
 
@@ -39,6 +41,15 @@ class BirthdayViewModel @Inject constructor(
                 childName = name
                 childAge = age
                 childAgeType = ageType
+            }
+        }
+    }
+
+    private fun handleAvatarChanged(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val savedUri = appPrefs.saveAvatarImage(uri)
+            updateView {
+                childAvatarUri = savedUri
             }
         }
     }

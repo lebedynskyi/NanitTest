@@ -35,7 +35,7 @@ fun NavGraphBuilder.buildNavigationGraph(controller: NavHostController) {
 
         val viewState by viewModel.viewState.collectAsState()
         CheckNavigation(viewState, controller)
-        BirthdayPage(viewState)
+        BirthdayPage(viewState, viewModel::onUiEvent)
     }
 }
 

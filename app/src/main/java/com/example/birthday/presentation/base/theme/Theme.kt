@@ -1,40 +1,35 @@
 package com.example.birthday.presentation.base.theme
 
-import android.os.Build
-import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.compose.LocalActivity
-import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.view.WindowCompat
 import com.example.birthday.R
 
 enum class AppTheme {
     FOX {
         override val bgImage = R.drawable.bg_fox
         override val avatarImage = R.drawable.ic_avatar_fox
+        override val cameraImage = R.drawable.ic_camera_fox
     },
 
     PELICAN {
         override val bgImage = R.drawable.bg_pelican
         override val avatarImage = R.drawable.ic_avatar_pelican
+        override val cameraImage = R.drawable.ic_camera_pelican
     },
 
     ELEPHANT {
         override val bgImage = R.drawable.bg_elephant
         override val avatarImage = R.drawable.ic_avatar_elephant
+        override val cameraImage = R.drawable.ic_camera_elephant
     };
 
     @get:DrawableRes
@@ -42,6 +37,9 @@ enum class AppTheme {
 
     @get:DrawableRes
     abstract val avatarImage: Int
+
+    @get:DrawableRes
+    abstract val cameraImage: Int
 }
 
 class ThemeController(

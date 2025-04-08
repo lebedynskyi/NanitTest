@@ -1,6 +1,8 @@
 package com.example.birthday.presentation.birthday
 
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -34,15 +38,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.birthday.R
+import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.theme.AppTheme
 import com.example.birthday.presentation.base.theme.BirthdayTheme
 import com.example.birthday.presentation.base.theme.LocalTheme
+import kotlin.math.cos
+import kotlin.math.sin
 
 private val IMAGE_NUMBERS = buildMap {
     put('0', R.drawable.ic_zero)
@@ -59,13 +67,25 @@ private val IMAGE_NUMBERS = buildMap {
 
 @Composable
 fun BirthdayPage(
-    viewState: BirthdayViewState
+    viewState: BirthdayViewState,
+    onEvent: (UiEvent) -> Unit = {},
 ) {
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        it?.let { onEvent(BirthdayPageUiEvent.OnAvatarChanged(it)) }
+    }
+
+    val themeController = LocalTheme.current
+
+    LaunchedEffect(Unit) {
+        themeController.switchTo((AppTheme.entries - themeController.theme).random())
+    }
+
     BirthdayPageContent(
         viewState.childName,
         viewState.childAge,
         viewState.childAgeType,
-        viewState.childAvatarUri
+        viewState.childAvatarUri,
+        onAvatarCameraClick = { launcher.launch("image/*") }
     )
 }
 
@@ -74,18 +94,19 @@ private fun BirthdayPageContent(
     childName: String?,
     childAge: Int?,
     childAgeType: BirthdayType?,
-    childAvatarUri: Uri?
+    childAvatarUri: Uri?,
+    onAvatarCameraClick: () -> Unit = {}
 ) {
     var footerHeight by remember { mutableIntStateOf(0) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         ChildAvatar(
-            childAvatarUri,
-            Modifier
+            childAvatarUri = childAvatarUri,
+            onAvatarCameraClick = onAvatarCameraClick,
+            modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .offset {
-                    IntOffset(0, -footerHeight)
-                })
+                .offset { IntOffset(0, -footerHeight) }
+        )
 
         Image(
             painterResource(LocalTheme.current.theme.bgImage),
@@ -129,10 +150,12 @@ private fun ChildAge(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            stringResource(R.string.today_is, childName),
+            stringResource(R.string.today_is, childName).uppercase(),
             textAlign = TextAlign.Center,
             fontSize = 21.sp,
-            color = Color(0xFF394562),
+            color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth(0.6F)
         )
 
@@ -161,38 +184,68 @@ private fun ChildAge(
                 pluralStringResource(R.plurals.old_years, childAge)
             },
             fontSize = 21.sp,
-            color = Color(0xFF394562)
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
 
-
 @Composable
 private fun ChildAvatar(
     childAvatarUri: Uri?,
-    modifier: Modifier = Modifier
+    onAvatarCameraClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val themeController = LocalTheme.current
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
     val bottomMargin = if (screenHeight > 700) 52.dp else 0.dp
     val scaleFactor = if (screenHeight > 700) 0.8F else 0.65F
-    System.err.println("Height DP $screenHeight")
-    System.err.println("Scale DP $scaleFactor")
+    var boxRadius by remember { mutableIntStateOf(0) }
+    var cameraRadius by remember { mutableIntStateOf(0) }
+    val cameraAngleRadians = Math.toRadians(315.0)
 
-    AsyncImage(
-        model = childAvatarUri ?: themeController.theme.avatarImage,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .padding(bottom = bottomMargin)
             .fillMaxWidth(scaleFactor)
             .aspectRatio(1f)
-            .clip(shape = CircleShape)
             .clickable {
                 themeController.switchTo((AppTheme.entries - themeController.theme).random())
-            },
-    )
+            }
+    ) {
+        AsyncImage(
+            model = childAvatarUri ?: themeController.theme.avatarImage,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(shape = CircleShape)
+                .onGloballyPositioned {
+                    boxRadius = it.size.height / 2
+                    System.err.println("POS BOX ${it.size}")
+                }
+        )
+
+        Image(
+            painter = painterResource(themeController.theme.cameraImage),
+            contentDescription = null,
+            modifier = Modifier
+                .onGloballyPositioned {
+                    cameraRadius = it.size.height / 2
+                    System.err.println("POS CAM ${it.size}")
+                }
+                .offset {
+                    IntOffset(
+                        (boxRadius * cos(cameraAngleRadians)).toInt(),
+                        (boxRadius * sin(cameraAngleRadians)).toInt()
+                    )
+                }
+                .clickable {
+                    onAvatarCameraClick()
+                }
+        )
+    }
 }
 
 @Composable
