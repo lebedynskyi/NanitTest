@@ -247,9 +247,6 @@ private fun AvatarBox(
         contentScale = ContentScale.Crop,
         modifier = modifier
             .clip(shape = CircleShape)
-            .clickable {
-                themeController.switchTo((AppTheme.entries - themeController.theme).random())
-            }
     )
 }
 
