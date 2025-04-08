@@ -3,9 +3,9 @@
 package com.example.birthday.presentation.welcome
 
 import android.net.Uri
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -60,8 +61,9 @@ fun WelcomePage(
         WelcomePageTopBar(Modifier.padding(top = 64.dp))
         WelcomePageContent(
             name = viewState.childName,
-            date = viewState.birthdayDate,
-            imageUri = viewState.avatarUri,
+            date = viewState.childBirthday,
+            imageUri = viewState.childAvatarUri,
+            showBtnEnabled = viewState.showBtnEnabled,
             onNameChanged = { onEvent(WelcomeUIEvent.NameChanged(it)) },
             onDateChanged = { onEvent(WelcomeUIEvent.DateChanged(it)) },
             onShowPressed = { onEvent(WelcomeUIEvent.OnShowBirthday) },
@@ -86,6 +88,7 @@ private fun WelcomePageContent(
     name: String?,
     date: LocalDateTime?,
     imageUri: Uri?,
+    showBtnEnabled: Boolean,
     onNameChanged: (String) -> Unit,
     onDateChanged: (Long) -> Unit,
     onAvatarClicked: () -> Unit,
@@ -94,6 +97,7 @@ private fun WelcomePageContent(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val themeController = LocalTheme.current
+    val focusManager = LocalFocusManager.current
 
     if (showDatePicker) {
         BirthdayDatePicker(
@@ -115,6 +119,9 @@ private fun WelcomePageContent(
             fallback = painterResource(themeController.theme.avatarImage),
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            onError = {
+                System.err.println("Unable to display $it")
+            },
             modifier = Modifier
                 .fillMaxWidth(0.6F)
                 .aspectRatio(1F)
@@ -134,11 +141,19 @@ private fun WelcomePageContent(
             value = date?.toString().orEmpty(),
             label = { Text(stringResource(R.string.birthday)) },
             onValueChange = {},
+            modifier = Modifier
+                .onFocusChanged { focusState ->
+                    if (focusState.hasFocus) {
+                        showDatePicker = true
+                    }
+                    focusManager.clearFocus(true)
+                }
         )
 
         Spacer(Modifier.size(12.dp))
 
         OutlinedButton(
+            enabled = showBtnEnabled,
             onClick = onShowPressed
         ) {
             Text(
