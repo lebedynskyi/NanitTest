@@ -72,7 +72,7 @@ class WelcomeViewModel @Inject constructor(
     }
 
     private fun handleAvatarSelected(uri: Uri) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val savedUri = appPrefs.saveAvatarImage(uri)
             updateView {
                 childAvatarUri = savedUri

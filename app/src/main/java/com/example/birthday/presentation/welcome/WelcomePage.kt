@@ -48,6 +48,7 @@ import com.example.birthday.presentation.base.theme.BirthdayTheme
 import com.example.birthday.presentation.base.theme.LocalTheme
 import com.example.birthday.presentation.base.theme.Typography
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Composable
 fun WelcomePage(
@@ -101,6 +102,7 @@ private fun WelcomePageContent(
 
     if (showDatePicker) {
         BirthdayDatePicker(
+            date,
             onDismiss = { showDatePicker = false },
             onConfirm = {
                 showDatePicker = false
@@ -166,22 +168,26 @@ private fun WelcomePageContent(
 
 @Composable
 private fun BirthdayDatePicker(
+    date: LocalDateTime?,
     onDismiss: () -> Unit = {},
     onConfirm: (Long) -> Unit = {},
 ) {
-    val datePickerState = rememberDatePickerState()
-    DatePickerDialog(onDismissRequest = onDismiss, confirmButton = {
-        TextButton(
-            onClick = {
-                datePickerState.selectedDateMillis?.let(onConfirm)
-            }) {
-            Text("OK")
-        }
-    }, dismissButton = {
-        TextButton(onClick = onDismiss) {
-            Text("Cancel")
-        }
-    }) {
+    val datePickerState = rememberDatePickerState(date?.toInstant(ZoneOffset.UTC)?.toEpochMilli())
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let(onConfirm)
+                }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }) {
         DatePicker(state = datePickerState)
     }
 }

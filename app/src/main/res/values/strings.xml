@@ -4,4 +4,16 @@
     <string name="birthday">Birthday</string>
     <string name="show_birthday_screen">Show birthday screen</string>
     <string name="share_the_news">Share the news</string>
+    <string name="today_is">TODAY %1$s IS</string>
+    <plurals name="old_month">
+        <item quantity="one">MONTH OLD!</item>
+        <item quantity="many">MONTHS OLD!</item>
+        <item quantity="other">MONTHS OLD!</item>
+    </plurals>
+
+    <plurals name="old_years">
+        <item quantity="one">YEAR OLD!</item>
+        <item quantity="many">YEARS OLD!</item>
+        <item quantity="other">YEARS OLD!</item>
+    </plurals>
 </resources>

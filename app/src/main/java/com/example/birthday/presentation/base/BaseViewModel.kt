@@ -11,8 +11,8 @@ abstract class BaseViewModel<STATE : ViewState>() : ViewModel() {
     private val _viewState = MutableStateFlow(createViewState())
     val viewState: StateFlow<STATE> = _viewState.asStateFlow()
 
-    abstract fun copyViewState(): STATE
     abstract fun createViewState(): STATE
+    abstract fun copyViewState(): STATE
 
     @CallSuper
     open fun onUiEvent(event: UiEvent) {

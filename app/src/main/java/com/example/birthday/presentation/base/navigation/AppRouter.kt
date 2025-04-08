@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.ViewState
 import com.example.birthday.presentation.birthday.BirthdayPage
-import com.example.birthday.presentation.birthday.BirthdayViewState
+import com.example.birthday.presentation.birthday.BirthdayViewModel
 import com.example.birthday.presentation.welcome.WelcomePage
 import com.example.birthday.presentation.welcome.WelcomeViewModel
 
@@ -28,7 +28,14 @@ fun NavGraphBuilder.buildNavigationGraph(controller: NavHostController) {
     }
 
     composable(AppRoute.Birthday.route) {
-        BirthdayPage(BirthdayViewState("asd"))
+        val viewModel = hiltViewModel<BirthdayViewModel>()
+        LaunchedEffect(Unit) {
+            viewModel.onUiEvent(UiEvent.ScreenLoaded)
+        }
+
+        val viewState by viewModel.viewState.collectAsState()
+        CheckNavigation(viewState, controller)
+        BirthdayPage(viewState)
     }
 }
 
