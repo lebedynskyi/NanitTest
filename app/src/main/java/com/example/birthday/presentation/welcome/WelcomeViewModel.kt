@@ -1,5 +1,6 @@
 package com.example.birthday.presentation.welcome
 
+import android.net.Uri
 import com.example.birthday.presentation.base.BaseViewModel
 import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.navigation.AppRoute
@@ -21,6 +22,7 @@ class WelcomeViewModel @Inject constructor() : BaseViewModel<WelcomeViewState>()
             is WelcomeUIEvent.NameChanged -> handleNameChanged(event.name)
             is WelcomeUIEvent.DateChanged -> handleDateChanged(event.date)
             is WelcomeUIEvent.OnShowBirthday -> handleShowBirthday()
+            is WelcomeUIEvent.OnAvatarSelected -> handleAvatarSelected(event.uri)
         }
     }
 
@@ -39,9 +41,14 @@ class WelcomeViewModel @Inject constructor() : BaseViewModel<WelcomeViewState>()
     }
 
     private fun handleShowBirthday() {
-        updateView{
+        updateView {
             appRoute = AppRoute.Birthday
         }
+    }
 
+    private fun handleAvatarSelected(uri: Uri) {
+        updateView {
+            avatarUri = uri
+        }
     }
 }

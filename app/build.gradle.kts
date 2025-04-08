@@ -65,8 +65,12 @@ dependencies {
 
     implementation(libs.android.hilt)
     implementation(libs.android.hilt.navigation)
-    implementation(libs.accompanist.ui)
     kapt(libs.android.hilt.compiler)
+
+    implementation(libs.accompanist.ui)
+
+    implementation(libs.coil.network)
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
