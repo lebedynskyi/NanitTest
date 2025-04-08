@@ -17,6 +17,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,17 +39,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -73,6 +79,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Date
 import androidx.core.graphics.createBitmap
+import kotlinx.coroutines.launch
 
 private val IMAGE_NUMBERS = buildMap {
     put('0', R.drawable.ic_zero)
@@ -98,15 +105,22 @@ fun BirthdayConstraint(
     }
 
     val themeController = LocalTheme.current
-    val activity = LocalActivity.current
     var captureImage by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val graphicsLayer = rememberGraphicsLayer()
 
     BirthdayConstraintContent(
         viewState = viewState,
         onBackClick = onBackNavigation,
         uiIsVisible = !captureImage,
         onAvatarCameraClick = { launcher.launch("image/*") },
-        onShareClick = { captureImage = true }
+        onShareClick = { captureImage = true },
+        modifier = Modifier.drawWithContent {
+            graphicsLayer.record {
+                this@drawWithContent.drawContent()
+            }
+            drawLayer(graphicsLayer)
+        }.background(MaterialTheme.colorScheme.background)
     )
 
     LaunchedEffect(Unit) {
@@ -115,9 +129,10 @@ fun BirthdayConstraint(
 
     LaunchedEffect(captureImage) {
         if (captureImage) {
-            captureView(activity!!.window.decorView.getRootView(), activity.window) {
+            coroutineScope.launch {
+                val bitmap = graphicsLayer.toImageBitmap()
                 captureImage = false
-                onEvent(BirthdayPageUiEvent.OnShareScreenShot(it))
+                onEvent(BirthdayPageUiEvent.OnShareScreenShot(bitmap.asAndroidBitmap()))
             }
         }
     }
@@ -131,8 +146,8 @@ fun BirthdayConstraint(
 @Composable
 private fun BirthdayConstraintContent(
     viewState: BirthdayViewState,
-    uiIsVisible: Boolean = true,
     modifier: Modifier = Modifier,
+    uiIsVisible: Boolean = true,
     onBackClick: () -> Unit = {},
     onAvatarCameraClick: () -> Unit = {},
     onShareClick: () -> Unit = {}
@@ -351,60 +366,6 @@ private fun AgeBox(
             color = MaterialTheme.colorScheme.onBackground
         )
     }
-}
-
-private fun takeScreenshot(window: Window): File {
-    val now: Date = Date()
-    DateFormat.format("yyyy-MM-dd_hh:mm:ss", now)
-    // image naming and path  to include sd card  appending name you choose for file
-    val mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg"
-
-    // create bitmap screen capture
-    val v1: View = window.decorView.getRootView()
-    v1.setDrawingCacheEnabled(true)
-    val bitmap = Bitmap.createBitmap(v1.drawingCache)
-    v1.setDrawingCacheEnabled(false)
-
-    val imageFile = File(mPath)
-
-    val outputStream = FileOutputStream(imageFile)
-    val quality = 100
-    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
-    outputStream.flush()
-    outputStream.close()
-
-    return imageFile
-}
-
-private fun createBitmapFromPicture(picture: Picture): Bitmap {
-    val bitmap = Bitmap.createBitmap(
-        picture.width,
-        picture.height,
-        Bitmap.Config.ARGB_8888
-    )
-
-    val canvas = android.graphics.Canvas(bitmap)
-    canvas.drawColor(android.graphics.Color.WHITE)
-    canvas.drawPicture(picture)
-    return bitmap
-}
-
-fun captureView(view: View, window: Window, bitmapCallback: (Bitmap) -> Unit) {
-    val bitmap = createBitmap(view.width, view.height)
-    val location = IntArray(2)
-    view.getLocationInWindow(location)
-    view.invalidate()
-    PixelCopy.request(
-        window,
-        Rect(location[0], location[1], location[0] + view.width, location[1] + view.height),
-        bitmap,
-        {
-            if (it == PixelCopy.SUCCESS) {
-                bitmapCallback.invoke(bitmap)
-            }
-        },
-        Handler(Looper.getMainLooper())
-    )
 }
 
 fun requestShareFile(
