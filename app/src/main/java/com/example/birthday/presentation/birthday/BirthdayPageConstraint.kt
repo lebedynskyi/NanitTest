@@ -97,7 +97,6 @@ fun BirthdayConstraint(
         onBackClick = onBackNavigation,
         onAvatarCameraClick = { launcher.launch("image/*") },
         onShareScreenShot = { onEvent(BirthdayPageUiEvent.OnShareScreenShot(it)) },
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
     )
 
     LaunchedEffect(Unit) {
@@ -145,7 +144,9 @@ private fun BirthdayConstraintContent(
                     this@drawWithContent.drawContent()
                 }
                 drawLayer(graphicsLayer)
-            }) {
+            }
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         val avatarSize = 280.dp
         val density = LocalDensity.current
 
@@ -194,8 +195,12 @@ private fun BirthdayConstraintContent(
                     val footerHeight = footerLayout?.size?.height ?: 0
                     val avatarHeight = avatarLayout?.size?.height ?: 0
                     val cameraSizeOffset = (cameraLayout?.size?.height ?: 0) / 2
-                    IntOffset(0, -footerHeight - avatarHeight - tallScreenOffsetY.toInt() + cameraSizeOffset)
-                }.onGloballyPositioned {
+                    IntOffset(
+                        0,
+                        -footerHeight - avatarHeight - tallScreenOffsetY.toInt() + cameraSizeOffset
+                    )
+                }
+                .onGloballyPositioned {
                     cameraLayout = it
                 }
         )
