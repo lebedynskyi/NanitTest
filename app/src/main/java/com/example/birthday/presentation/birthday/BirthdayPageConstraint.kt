@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -189,15 +188,19 @@ private fun BirthdayConstraintContent(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .offset {
-                    // TODO this is not done. Trying to place icon on 45 degree angle.
-                    //  Need calculate cos and sin according center of the avatar
                     val tallScreenOffsetY = if (tallScreen) with(density) { 60.dp.toPx() } else 0F
                     val footerHeight = footerLayout?.size?.height ?: 0
                     val avatarHeight = avatarLayout?.size?.height ?: 0
                     val cameraSizeOffset = (cameraLayout?.size?.height ?: 0) / 2
+
+                    val angleRadians = Math.toRadians(45.0)
+                    val radius = avatarHeight / 2
+                    val radiusXOffset = (radius * kotlin.math.cos(angleRadians)).toInt()
+                    val radiusYOffset = (radius * kotlin.math.sin(angleRadians)).toInt() - radius
+
                     IntOffset(
-                        0,
-                        -footerHeight - avatarHeight - tallScreenOffsetY.toInt() + cameraSizeOffset
+                        radiusXOffset,
+                        -footerHeight - avatarHeight - tallScreenOffsetY.toInt() + cameraSizeOffset - radiusYOffset
                     )
                 }
                 .onGloballyPositioned {
