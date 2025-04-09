@@ -1,6 +1,7 @@
 package com.example.birthday.presentation.birthday
 
 import android.app.Activity
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,17 +42,20 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Visibility
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import coil3.compose.AsyncImage
@@ -86,36 +91,17 @@ fun BirthdayConstraint(
     }
 
     val themeController = LocalTheme.current
-    var captureImage by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    val graphicsLayer = rememberGraphicsLayer()
 
     BirthdayConstraintContent(
         viewState = viewState,
         onBackClick = onBackNavigation,
-        uiIsVisible = !captureImage,
         onAvatarCameraClick = { launcher.launch("image/*") },
-        onShareClick = { captureImage = true },
-        modifier = Modifier.drawWithContent {
-            graphicsLayer.record {
-                this@drawWithContent.drawContent()
-            }
-            drawLayer(graphicsLayer)
-        }.background(MaterialTheme.colorScheme.background)
+        onShareScreenShot = { onEvent(BirthdayPageUiEvent.OnShareScreenShot(it)) },
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
     )
 
     LaunchedEffect(Unit) {
         themeController.switchTo((AppTheme.entries - themeController.theme).random())
-    }
-
-    LaunchedEffect(captureImage) {
-        if (captureImage) {
-            coroutineScope.launch {
-                val bitmap = graphicsLayer.toImageBitmap()
-                captureImage = false
-                onEvent(BirthdayPageUiEvent.OnShareScreenShot(bitmap.asAndroidBitmap()))
-            }
-        }
     }
 
     viewState.shareUri?.let {
@@ -128,29 +114,53 @@ fun BirthdayConstraint(
 private fun BirthdayConstraintContent(
     viewState: BirthdayViewState,
     modifier: Modifier = Modifier,
-    uiIsVisible: Boolean = true,
     onBackClick: () -> Unit = {},
     onAvatarCameraClick: () -> Unit = {},
-    onShareClick: () -> Unit = {}
+    onShareScreenShot: (Bitmap) -> Unit = {}
 ) {
-    ConstraintLayout(
-        modifier = modifier.fillMaxSize()
-    ) {
-        val (avatarBox, ageBox, backBtn, cameraBtn, uiFooterBox) = createRefs()
-        val configuration = LocalConfiguration.current
-        val screenHeight = configuration.screenHeightDp
+    var footerLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
+    var avatarLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
+    var cameraLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
+    val graphicsLayer = rememberGraphicsLayer()
+    var captureImage by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val configuration = LocalConfiguration.current
+    val tallScreen = configuration.screenHeightDp > 700
+
+    LaunchedEffect(captureImage) {
+        if (captureImage) {
+            coroutineScope.launch {
+                val bitmap = graphicsLayer.toImageBitmap()
+                onShareScreenShot(bitmap.asAndroidBitmap())
+            }
+        }
+        captureImage = false
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .drawWithContent {
+                graphicsLayer.record {
+                    this@drawWithContent.drawContent()
+                }
+                drawLayer(graphicsLayer)
+            }) {
         val avatarSize = 280.dp
+        val density = LocalDensity.current
 
         AvatarBox(
             childAvatarUri = viewState.childAvatarUri,
             modifier = Modifier
                 .width(avatarSize)
                 .height(avatarSize)
-                .constrainAs(avatarBox) {
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(uiFooterBox.top, if (screenHeight > 700) 60.dp else 0.dp)
+                .align(Alignment.BottomCenter)
+                .offset {
+                    val tallScreenOffsetY = if (tallScreen) with(density) { 60.dp.toPx() } else 0F
+                    val footerHeight = footerLayout?.size?.height ?: 0
+                    IntOffset(0, -footerHeight - tallScreenOffsetY.toInt())
                 }
+                .onGloballyPositioned { avatarLayout = it }
         )
 
         BackgroundBox(Modifier.fillMaxSize())
@@ -160,40 +170,42 @@ private fun BirthdayConstraintContent(
             childAge = viewState.childAge ?: 0,
             childAgeType = viewState.childAgeType ?: BirthdayType.MONTH,
             modifier = Modifier
-                .constrainAs(ageBox) {
-                    top.linkTo(parent.top, if (screenHeight > 700) 32.dp else 20.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
+                .fillMaxWidth()
+                .padding(top = if (tallScreen) 32.dp else 20.dp)
         )
+    }
 
+    Box(modifier = Modifier.fillMaxSize()) {
         BackBtn(
             onClick = onBackClick,
             modifier = Modifier
-                .constrainAs(backBtn) {
-                    top.linkTo(parent.top, margin = 12.dp)
-                    start.linkTo(parent.start, margin = 12.dp)
-                    visibility = if (uiIsVisible) Visibility.Visible else Visibility.Invisible
-                }
+                .align(Alignment.TopStart)
+                .padding(12.dp)
         )
 
         CameraBtn(
             onClick = onAvatarCameraClick,
-            modifier = Modifier.constrainAs(cameraBtn) {
-                top.linkTo(avatarBox.top, margin = 24.dp)
-                end.linkTo(avatarBox.end, margin = 24.dp)
-                visibility = if (uiIsVisible) Visibility.Visible else Visibility.Invisible
-            }
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset {
+                    // TODO this is not done. Trying to place icon on 45 degree angle.
+                    //  Need calculate cos and sin according center of the avatar
+                    val tallScreenOffsetY = if (tallScreen) with(density) { 60.dp.toPx() } else 0F
+                    val footerHeight = footerLayout?.size?.height ?: 0
+                    val avatarHeight = avatarLayout?.size?.height ?: 0
+                    val cameraSizeOffset = (cameraLayout?.size?.height ?: 0) / 2
+                    IntOffset(0, -footerHeight - avatarHeight - tallScreenOffsetY.toInt() + cameraSizeOffset)
+                }.onGloballyPositioned {
+                    cameraLayout = it
+                }
         )
 
-        UIFooterBox(
-            onClick = onShareClick,
+        FooterBox(
+            onClick = { captureImage = true },
             modifier = Modifier
-                .constrainAs(uiFooterBox) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    visibility = if (uiIsVisible) Visibility.Visible else Visibility.Invisible
+                .align(Alignment.BottomCenter)
+                .onGloballyPositioned {
+                    footerLayout = it
                 }
         )
     }
@@ -263,7 +275,7 @@ private fun AvatarBox(
 }
 
 @Composable
-private fun UIFooterBox(
+private fun FooterBox(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
