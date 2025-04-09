@@ -65,18 +65,22 @@ import com.example.birthday.presentation.base.theme.BirthdayTheme
 import com.example.birthday.presentation.base.theme.LocalTheme
 import java.io.File
 import kotlinx.coroutines.launch
+import java.time.Year
 
 private val IMAGE_NUMBERS = buildMap {
-    put('0', R.drawable.ic_zero)
-    put('1', R.drawable.ic_one)
-    put('2', R.drawable.ic_two)
-    put('3', R.drawable.ic_three)
-    put('4', R.drawable.ic_four)
-    put('5', R.drawable.ic_five)
-    put('6', R.drawable.ic_six)
-    put('7', R.drawable.ic_seven)
-    put('8', R.drawable.ic_eight)
-    put('9', R.drawable.ic_nine)
+    put("0", R.drawable.ic_zero)
+    put("1", R.drawable.ic_one)
+    put("2", R.drawable.ic_two)
+    put("3", R.drawable.ic_three)
+    put("4", R.drawable.ic_four)
+    put("5", R.drawable.ic_five)
+    put("6", R.drawable.ic_six)
+    put("7", R.drawable.ic_seven)
+    put("8", R.drawable.ic_eight)
+    put("9", R.drawable.ic_nine)
+    put("10", R.drawable.ic_ten)
+    put("11", R.drawable.ic_eleven)
+    put("12", R.drawable.ic_twelve)
 }
 
 @Composable
@@ -347,21 +351,31 @@ private fun AgeBox(
                 contentDescription = null,
                 modifier = Modifier.padding(end = 22.dp)
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                childAge.toString().forEach {
-                    Image(
-                        painterResource(IMAGE_NUMBERS.getValue(it)),
-                        contentDescription = null
-                    )
+            if (childAge > 12 && childAgeType == BirthdayType.YEAR) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    childAge.toString().forEach {
+                        Image(
+                            painterResource(IMAGE_NUMBERS.getValue(it.toString())),
+                            contentDescription = null
+                        )
+                    }
                 }
+            } else {
+                Image(
+                    painterResource(IMAGE_NUMBERS.getValue(childAge.toString())),
+                    contentDescription = null
+                )
             }
+
             Image(
                 painter = painterResource(R.drawable.ic_left_swirls),
                 contentDescription = null,
-                modifier = Modifier.padding(start = 22.dp).rotate(180F)
+                modifier = Modifier
+                    .padding(start = 22.dp)
+                    .rotate(180F)
             )
         }
 
