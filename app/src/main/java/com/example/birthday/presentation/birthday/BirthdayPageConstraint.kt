@@ -341,19 +341,27 @@ private fun AgeBox(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(22.dp)
         ) {
-            Image(painterResource(R.drawable.ic_left_swirls), contentDescription = null)
-            childAge.toString().forEach {
-                Image(
-                    painterResource(IMAGE_NUMBERS.getValue(it)),
-                    contentDescription = null
-                )
+            Image(
+                painter = painterResource(R.drawable.ic_left_swirls),
+                contentDescription = null,
+                modifier = Modifier.padding(end = 22.dp)
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                childAge.toString().forEach {
+                    Image(
+                        painterResource(IMAGE_NUMBERS.getValue(it)),
+                        contentDescription = null
+                    )
+                }
             }
             Image(
-                painterResource(R.drawable.ic_left_swirls),
-                modifier = Modifier.rotate(180F),
-                contentDescription = null
+                painter = painterResource(R.drawable.ic_left_swirls),
+                contentDescription = null,
+                modifier = Modifier.padding(start = 22.dp).rotate(180F)
             )
         }
 
