@@ -229,7 +229,7 @@ private fun BackBtn(
         modifier = modifier
             .size(48.dp)
             .clickable {
-                onClick
+                onClick()
             }
     ) {
         Image(
