@@ -65,7 +65,6 @@ import com.example.birthday.presentation.base.theme.BirthdayTheme
 import com.example.birthday.presentation.base.theme.LocalTheme
 import java.io.File
 import kotlinx.coroutines.launch
-import java.time.Year
 
 private val IMAGE_NUMBERS = buildMap {
     put("0", R.drawable.ic_zero)
@@ -84,7 +83,7 @@ private val IMAGE_NUMBERS = buildMap {
 }
 
 @Composable
-fun BirthdayConstraint(
+fun BirthdayPage(
     viewState: BirthdayViewState,
     onEvent: (UiEvent) -> Unit = {},
     onBackNavigation: () -> Unit = {},
@@ -408,7 +407,7 @@ fun requestShareFile(
 @Composable
 private fun PreviewBirthdayConstraint() {
     BirthdayTheme {
-        BirthdayConstraint(
+        BirthdayPage(
             BirthdayViewState(
                 childName = "Cristiano",
                 childAge = 12,

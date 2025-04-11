@@ -10,7 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.birthday.presentation.base.UiEvent
 import com.example.birthday.presentation.base.ViewState
-import com.example.birthday.presentation.birthday.BirthdayConstraint
+import com.example.birthday.presentation.birthday.BirthdayPage
 import com.example.birthday.presentation.birthday.BirthdayViewModel
 import com.example.birthday.presentation.welcome.WelcomePage
 import com.example.birthday.presentation.welcome.WelcomeViewModel
@@ -35,7 +35,7 @@ fun NavGraphBuilder.buildNavigationGraph(controller: NavHostController) {
 
         val viewState by viewModel.viewState.collectAsState()
         CheckNavigation(viewState, controller)
-        BirthdayConstraint(
+        BirthdayPage(
             viewState,
             viewModel::onUiEvent
         ) {
