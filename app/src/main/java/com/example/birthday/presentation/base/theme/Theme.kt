@@ -54,8 +54,6 @@ class ThemeController(
 }
 
 private val PelicanColorScheme = lightColorScheme(
-    primary = Color(0xFFDAF1F6),
-    onPrimary = Color(0xFF394562),
     background = Color(0xFFDAF1F6),
     onBackground = Color(0xFF394562),
     secondary = Color(0xFFEF7B7B),
@@ -64,7 +62,6 @@ private val PelicanColorScheme = lightColorScheme(
 )
 
 private val FoxColorScheme = lightColorScheme(
-    primary = Color(0xFF6FC5AF),
     onPrimary = Color(0xFF394562),
     background = Color(0xFFC5E8DF),
     onBackground = Color(0xFF394562),
@@ -74,7 +71,6 @@ private val FoxColorScheme = lightColorScheme(
 )
 
 private val ElephantColorScheme = lightColorScheme(
-    primary = Color(0xFFFEEFCB),
     onPrimary = Color(0xFF394562),
     background = Color(0xFFFEEFCB),
     onBackground = Color(0xFF394562),

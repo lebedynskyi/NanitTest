@@ -122,11 +122,15 @@ private fun BirthdayConstraintContent(
     var footerLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
     var avatarLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
     var cameraLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
+    var ageLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
+    var rootLayout: LayoutCoordinates? by remember { mutableStateOf(null) }
     val graphicsLayer = rememberGraphicsLayer()
     var captureImage by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
     val tallScreen = configuration.screenHeightDp > 700
+    val tallScreenOffsetY = if (tallScreen) with(density) { 60.dp.toPx() } else 0F
 
     LaunchedEffect(captureImage) {
         if (captureImage) {
@@ -148,9 +152,9 @@ private fun BirthdayConstraintContent(
                 drawLayer(graphicsLayer)
             }
             .background(MaterialTheme.colorScheme.background)
+            .onGloballyPositioned { rootLayout = it }
     ) {
         val avatarSize = 280.dp
-        val density = LocalDensity.current
 
         AvatarBox(
             childAvatarUri = viewState.childAvatarUri,
@@ -159,7 +163,6 @@ private fun BirthdayConstraintContent(
                 .height(avatarSize)
                 .align(Alignment.BottomCenter)
                 .offset {
-                    val tallScreenOffsetY = if (tallScreen) with(density) { 60.dp.toPx() } else 0F
                     val footerHeight = footerLayout?.size?.height ?: 0
                     IntOffset(0, -footerHeight - tallScreenOffsetY.toInt())
                 }
@@ -174,7 +177,19 @@ private fun BirthdayConstraintContent(
             childAgeType = viewState.childAgeType ?: BirthdayType.MONTH,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = if (tallScreen) 32.dp else 20.dp)
+                .align(Alignment.BottomCenter)
+                .offset {
+                    val footerHeight = footerLayout?.size?.height ?: 0
+                    val avatarHeight = avatarLayout?.size?.height ?: 0
+                    val ageOffset = (ageLayout?.size?.height ?: 0) / 2
+                    val avatarFullOffset = footerHeight + avatarHeight + tallScreenOffsetY.toInt()
+                    val rootHeight = rootLayout?.size?.height ?: 0
+                    IntOffset(
+                        0,
+                        -avatarFullOffset - ((rootHeight - avatarFullOffset) / 2) + ageOffset
+                    )
+                }
+                .onGloballyPositioned { ageLayout = it }
         )
     }
 
@@ -191,7 +206,6 @@ private fun BirthdayConstraintContent(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .offset {
-                    val tallScreenOffsetY = if (tallScreen) with(density) { 60.dp.toPx() } else 0F
                     val footerHeight = footerLayout?.size?.height ?: 0
                     val avatarHeight = avatarLayout?.size?.height ?: 0
                     val cameraSizeOffset = (cameraLayout?.size?.height ?: 0) / 2
